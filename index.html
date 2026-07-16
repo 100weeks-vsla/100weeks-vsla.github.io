@@ -1053,7 +1053,11 @@ async function _recoverFromCapacitor(){
     // Load notification contacts (email/WhatsApp) — Supabase with local fallback
     await _sbLoadNotifyContacts();
   } catch(e) {
-    console.warn('Supabase hydration failed, using localStorage:', _errStr(e));
+    var _hydrateErrMsg = _errStr(e);
+    console.warn('Supabase hydration failed, using localStorage:', _hydrateErrMsg);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Could not load data from server: ' + _hydrateErrMsg, 'err');
+    }
     _cache_coaches = JSON.parse(localStorage.getItem("vsla_coaches") || "[]");
     _cache_reports = JSON.parse(localStorage.getItem("vsla_reports") || "[]");
     _cache_admins  = JSON.parse(localStorage.getItem("vsla_country_admins") || "[]");
