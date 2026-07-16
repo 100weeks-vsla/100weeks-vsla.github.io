@@ -1,3 +1,4 @@
+
 /* ──────────────────────────────────────────────────────────────────
    100 Weeks VSLA — Service Worker  v2.0
    Network-first for shell (HTML) so updates always show immediately.
