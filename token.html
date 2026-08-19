@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>100W · Google connection code</title>
+<!--
+  Upload this file to the root of the 100weeks-vsla.github.io repository, so it
+  is reachable at https://100weeks-vsla.github.io/token.html
+
+  Google sends the access token here in the URL fragment (#access_token=...).
+  A fragment never leaves the browser — it is not sent to GitHub, not logged by
+  any server, and not visible to anyone but the person signing in. This page
+  reads it with JavaScript and shows it so it can be copied back into the app.
+
+  Nothing is stored, sent or tracked here. It is a piece of paper, not a service.
+-->
+<style>
+  :root{--ink:#12202E;--muted:#66768A;--line:#E3E8EC;--teal:#0C7A6F;--paper:#fff;--ground:#F3F5F7}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);
+       font:16px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif;
+       display:flex;align-items:center;justify-content:center;min-height:100vh;padding:18px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;
+        padding:22px;max-width:520px;width:100%;box-shadow:0 2px 14px rgba(10,30,56,.07)}
+  h1{font-size:18px;margin:0 0 4px}
+  p{margin:0 0 14px;font-size:13.5px;color:var(--muted)}
+  code{display:block;background:var(--ground);border:1px solid var(--line);border-radius:10px;
+       padding:12px;font:12px/1.5 ui-monospace,"Roboto Mono",Menlo,monospace;
+       word-break:break-all;margin-bottom:12px;max-height:38vh;overflow:auto}
+  button{width:100%;min-height:48px;border:0;border-radius:12px;background:var(--ink);color:#fff;
+         font:700 15px/1 inherit;cursor:pointer}
+  button.copied{background:var(--teal)}
+  .bad{background:#FDECEA;border:1px solid #F0C4BE;color:#A32318;border-radius:10px;
+       padding:12px;font-size:13.5px}
+  .steps{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="card" id="card">Reading the code…</div>
+
+<script>
+(function () {
+  var card = document.getElementById('card');
+
+  function param(name) {
+    var m = String(location.hash || '').match(new RegExp('[#&]' + name + '=([^&]*)'));
+    if (m) return decodeURIComponent(m[1]);
+    m = String(location.search || '').match(new RegExp('[?&]' + name + '=([^&]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  var token = param('access_token');
+  var err = param('error');
+
+  if (err) {
+    card.innerHTML =
+      '<h1>Google refused the request</h1>' +
+      '<div class="bad"><b>' + err.replace(/</g, '&lt;') + '</b>' +
+      (err === 'access_denied'
+        ? '<br><br>The permission was not granted. Go back to the app and try again, tapping Allow this time.'
+        : err === 'redirect_uri_mismatch'
+          ? '<br><br>This page is not registered as a redirect URI. In Google Cloud Console → Credentials → ' +
+            'your OAuth client → Authorised redirect URIs, add exactly:<br><br>' +
+            '<code>https://100weeks-vsla.github.io/token.html</code>'
+          : '') +
+      '</div>';
+    return;
+  }
+
+  if (!token) {
+    card.innerHTML =
+      '<h1>Nothing to show</h1>' +
+      '<p>This page only has something to display when Google sends you here after signing in. ' +
+      'Open it from the app rather than directly.</p>';
+    return;
+  }
+
+  card.innerHTML =
+    '<h1>Your connection code</h1>' +
+    '<p>Copy this and paste it back into the app. It works for one hour.</p>' +
+    '<code id="tok">' + token.replace(/</g, '&lt;') + '</code>' +
+    '<button id="btn">Copy the code</button>' +
+    '<div class="steps">Then: go back to the app &rsaquo; paste it in the box &rsaquo; tap Connect.</div>';
+
+  document.getElementById('btn').onclick = function () {
+    var btn = this;
+    var done = function () {
+      btn.textContent = '\u2713 Copied — now paste it in the app';
+      btn.className = 'copied';
+    };
+    try {
+      navigator.clipboard.writeText(token).then(done, fallback);
+    } catch (e) { fallback(); }
+
+    function fallback() {
+      /* older WebViews and http pages have no clipboard API: select the text so
+         a long press offers Copy */
+      var r = document.createRange();
+      r.selectNodeContents(document.getElementById('tok'));
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+      btn.textContent = 'Selected — long-press and choose Copy';
+    }
+  };
+})();
+</script>
+</body>
+</html>
