@@ -4725,17 +4725,20 @@ function mount(which, who){
     c.appendChild(b); c.appendChild(l); o.appendChild(c);
     (document.body || document.documentElement).appendChild(o);
   }
+  var asked = false;
   function check(){
     var AppUpdate = plugin();
-    if(!AppUpdate || !AppUpdate.getAppUpdateInfo) return;
+    if(asked || !AppUpdate || !AppUpdate.getAppUpdateInfo) return;
     AppUpdate.getAppUpdateInfo().then(function(info){
+      asked = true;
       if(!info || info.updateAvailability !== UPDATE_AVAILABLE) return;
       show(AppUpdate);
     }).catch(function(){ /* offline, sideloaded, or nothing new - stay quiet */ });
   }
-  function boot(){ setTimeout(check, 5000); }
-  if(document.readyState === 'complete') boot();
-  else window.addEventListener('load', boot, false);
+  /* A plain timer, not a 'load' listener: mount() replaces this document with
+     document.open(), which erases window listeners but keeps timers. */
+  setTimeout(check, 6000);
+  setTimeout(check, 20000);
 })();
 </script>
 
